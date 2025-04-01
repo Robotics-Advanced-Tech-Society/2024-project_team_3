@@ -1,0 +1,39 @@
+#include <IRremote.h> // >v3.0.0
+                                            
+#define PIN_SEND 2
+#define PIN_RECV 3
+#define PIN_LED 8 
+
+const uint32_t TARGET_IR_CODE = 0xCC33CC33;
+
+void setup()  
+{  
+  IrSender.begin(PIN_SEND); // Initializes IR sender
+  Serial.begin(9600); //initialize serial connection to print on the Serial Monitor of the Arduino IDE
+  IrReceiver.begin(PIN_RECV); // Initializes the IR receiver object
+  pinMode(PIN_LED, OUTPUT);
+  digitalWrite(PIN_LED, LOW); 
+}  
+                               
+void loop()  
+{  
+  IrSender.sendNEC(0x025, 0x025, 0); // the address 0x0102 with the command 0x34 is sent 
+  delay(1000); // wait for one second
+
+   // Check if an IR signal is received
+    if (IrReceiver.decode()) {
+        Serial.println("Received something...");
+        IrReceiver.printIRResultShort(&Serial);  // Print received data
+
+        // Check if received signal matches target
+        if (IrReceiver.decodedIRData.decodedRawData == TARGET_IR_CODE) {
+            digitalWrite(PIN_LED, HIGH);  // Turn LED ON
+            Serial.println("LED ON!");
+        } else {
+            digitalWrite(PIN_LED, LOW);  // Turn LED OFF
+            Serial.println("LED OFF!");
+        }
+
+        IrReceiver.resume(); // Ready for the next IR signal
+    }
+}
